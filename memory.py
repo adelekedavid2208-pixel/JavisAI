@@ -1,36 +1,55 @@
 import json
 import os
+from datetime import datetime
 
 MEMORY_FILE = "memory.json"
+MAX_FACTS = 200   # prevents memory from growing endlessly
 
 
 def load_memory():
     if not os.path.exists(MEMORY_FILE):
-        return {"chat": []}
+        return {"facts": []}
 
-    with open(MEMORY_FILE, "r") as f:
-        return json.load(f)
-
-
-def save_memory(memory):
-    with open(MEMORY_FILE, "w") as f:
-        json.dump(memory, f, indent=2)
+    try:
+        with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {"facts": []}
 
 
-def add_memory(role, content):
-    memory = load_memory()
+def save_memory(data):
+    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
-    memory["chat"].append({
-        "role": role,
-        "content": content
+
+def add_memory(text):
+    text = text.strip()
+    if not text:
+        return
+
+    data = load_memory()
+
+    # prevent duplicates
+    existing = [fact["text"].lower() for fact in data["facts"]]
+    if text.lower() in existing:
+        return
+
+    data["facts"].append({
+        "text": text,
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
 
-    # keep last 20 messages only (prevents bloat)
-    memory["chat"] = memory["chat"][-20:]
+    # limit memory size
+    if len(data["facts"]) > MAX_FACTS:
+        data["facts"] = data["facts"][-MAX_FACTS:]
 
-    save_memory(memory)
+    save_memory(data)
 
 
-def get_context():
-    memory = load_memory()
-    return memory["chat"]
+def get_memory(limit=10):
+    data = load_memory()
+    return data["facts"][-limit:]
+
+
+def clear_memory():
+    save_memory({"facts": []})
