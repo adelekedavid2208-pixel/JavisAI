@@ -94,7 +94,7 @@ Build an AI operating system assistant comparable to the fictional Jarvis from I
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/JarvisAI.git
+git clone https://github.com/adelekedavid2208-pixel/JavisAI
 
 cd JarvisAI
 
